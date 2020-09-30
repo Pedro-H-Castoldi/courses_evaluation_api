@@ -1,6 +1,19 @@
 from django.urls import path
+from rest_framework.routers import SimpleRouter
 
-from .views import CourseAPIView, CoursesAPIView ,EvaluationAPIView, EvaluationsAPIView
+from .views import (
+    CourseAPIView,
+    CoursesAPIView,
+    EvaluationAPIView,
+    EvaluationsAPIView,
+    EvaluationViewSet,
+    CourseViewSet
+)
+
+# Com o objeto router extanciado da classe SimpleRouter, as rotas serão geradas automaticamente sem muito código.
+router = SimpleRouter()
+router.register('courses', CourseViewSet)
+router.register('evaluations', EvaluationViewSet)
 
 urlpatterns = [
     path('courses/', CoursesAPIView.as_view(), name='courses'),
