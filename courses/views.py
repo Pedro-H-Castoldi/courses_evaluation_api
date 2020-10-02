@@ -4,6 +4,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework import mixins
 
 from .serializers import CourseSerializer, EvaluationSerializer
 from .models import Course, Evaluation
@@ -64,10 +65,36 @@ class CourseViewSet(viewsets.ModelViewSet):
     # Detail=True indica q é para executar isso, methods são os métodos q serão executados nessa função
     @action(detail=True, methods=['get'])
     def evaluations(self, request, pk=None):
-        course = self.get_object() # course pegará o objeto do curso q foi deferido
-        serializer = EvaluationSerializer(course.evaluation.all(), many=True) # Pegue todas as avaliações que foram dirigidas à esse curso, many=True (todos).
-        return Response(serializer.data) # Retorne todos os dados obtidos.
+        self.pagination_class.page_size = 1 # Página de 1 dado por vez
+        evaluation = Evaluation.objects.filter(course_id=pk) # Pega as avaliações onde o atributo course_id da tabela Evaluation seja igual ao PK do Curso requerido
+        page = self.paginate_queryset(evaluation) # Gera a pagina (aki verá se será necessário fazer a paginação ou n de acordo com o número de objetos
 
+        if page: # Se existir page
+            serializer = EvaluationSerializer(page, many=True) # Pega todos os dados do EvaluationSerializer onde page pertença (Evaluation.objects.filter(course_id=pk)
+            return self.get_paginated_response(serializer.data) # Retorne os dados da serializer em paginas
+
+        serializer = EvaluationSerializer(evaluation, many=True) # Senão, Retorne Evaluation.objects.filter(course_id=pk)
+        return Response(serializer.data) # Como n existia paginação, logo o número de objetos era =< à quantidade de objetos por página
+
+
+        """course = self.get_object() # course pegará o objeto do curso q foi deferido
+        serializer = EvaluationSerializer(course.evaluation.all(), many=True) # Pegue todas as avaliações que foram dirigidas à esse curso, many=True (todos).
+        return Response(serializer.data) # Retorne todos os dados obtidos."""
+
+"""
 class EvaluationViewSet(viewsets.ModelViewSet):
+    queryset = Evaluation.objects.all()
+    serializer_class = EvaluationSerializer
+ """
+
+# Se por acaso eu querer restringir certas métodos http, bastas importar o mixins comentar as extenções
+class EvaluationViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin, # Comentando aki n permitirá q liste todas as avaliações de uma vez
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet):
+
     queryset = Evaluation.objects.all()
     serializer_class = EvaluationSerializer

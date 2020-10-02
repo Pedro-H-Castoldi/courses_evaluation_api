@@ -21,6 +21,15 @@ class EvaluationSerializer(serializers.ModelSerializer):
         )
 
 class CourseSerializer(serializers.ModelSerializer):
+    # Nested Relationship
+    # Pega n (many) avaliações de um detarminado curso apenas para leitura
+    #evaluation = EvaluationSerializer(many=True, read_only=True)
+
+    # HyperLinked Related Fields
+    #evaluation = serializers.HyperlinkedRelatedField(many=True, read_only=True, view_name='evaluation-detail')
+
+    # Primary Key Related Field
+    #evaluation = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
     class Meta:
         model = Course
@@ -30,4 +39,5 @@ class CourseSerializer(serializers.ModelSerializer):
             'url',
             'creation',
             'active',
+            'evaluation'
         )

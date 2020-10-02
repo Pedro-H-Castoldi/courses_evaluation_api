@@ -2,12 +2,12 @@ from django.db import models
 
 class Base(models.Model):
 
-    creation = models.DateTimeField('criation', auto_now_add=True)
-    update = models.DateTimeField('update', auto_now=True)
-    active = models.BooleanField('active?', default=True)
+    creation = models.DateTimeField(auto_now_add=True)
+    update = models.DateTimeField(auto_now=True)
+    active = models.BooleanField(default=True)
 
     class Meta:
-        abstract= True
+        abstract = True
 
 class Course(Base):
 
@@ -17,6 +17,7 @@ class Course(Base):
     class Meta:
         verbose_name = 'Course'
         verbose_name_plural = 'Courses'
+        ordering = ['-id']
 
     def __str__(self):
         return self.title
@@ -32,7 +33,8 @@ class Evaluation(Base):
     class Meta:
         verbose_name = 'Evaluation'
         verbose_name_plural = 'Evaluations'
-        unique_together = ['course', 'email']
+        unique_together = ['email', 'course']
+        ordering =['id']
 
     def __str__(self):
         return f'{self.name} rated the course {self.course} with the grade {self.grade}'
