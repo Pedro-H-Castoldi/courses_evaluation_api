@@ -10,7 +10,6 @@ class CourseAPIView(APIView):
     Geek Courses API
     """
     def get(self, request):
-        #print(request.user.email)
         course = Course.objects.all()
         serializer = CourseSerializer(course, many=True)
         return Response(serializer.data)

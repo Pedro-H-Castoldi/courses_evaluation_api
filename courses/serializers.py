@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from .models import Course, Evaluation
+from django.db.models import Avg
 
 class EvaluationSerializer(serializers.ModelSerializer):
 
@@ -20,9 +21,13 @@ class EvaluationSerializer(serializers.ModelSerializer):
             'active',
         )
 
+    def validate_grade(self, value):
+        if value in range(1, 6):
+            return value
+        raise serializers.ValidationError('The grade must be 1 to 5.')
+
 class CourseSerializer(serializers.ModelSerializer):
     # Nested Relationship
-    # Pega n (many) avaliações de um detarminado curso apenas para leitura
     #evaluation = EvaluationSerializer(many=True, read_only=True)
 
     # HyperLinked Related Fields
@@ -30,6 +35,8 @@ class CourseSerializer(serializers.ModelSerializer):
 
     # Primary Key Related Field
     #evaluation = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+
+    average_evaluation = serializers.SerializerMethodField()
 
     class Meta:
         model = Course
@@ -39,5 +46,13 @@ class CourseSerializer(serializers.ModelSerializer):
             'url',
             'creation',
             'active',
-            'evaluation'
+            'evaluation',
+            'average_evaluation'
         )
+
+    def get_average_evaluation(self, obj):
+        average = obj.evaluation.aggregate(Avg('grade')).get('grade__avg')
+
+        if average is None:
+            return 0
+        return round(average * 2) / 2
